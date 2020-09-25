@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico">
+
+        <title>Cam House sockets</title>
+
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <style>
+
+            html,
+            body {
+                height: 100%;
+            }
+
+        </style>
+    </head>
+
+    <body class="text-center">
+        <div class="container d-flex h-100 p-3 mx-auto flex-column">
+            <header class="mb-auto">
+                <h3 class="brand">Cam House Sockets</h3>
+            </header>
+
+            <main role="main">
+                <div class="alert" role="alert" style="display:none">
+                </div>
+                <table class="table">
+                    {# <thead>
+                        <tr>
+                            <th></th><th></th><th></th><th></th>
+                        </tr>
+                    </thead> #}
+                    <tbody>
+                    {% for socket in sockets %}
+                        <tr data-id={{ socket.id }}>
+                            <td>Socket {{ socket.id }}</td><td>{{ socket.name }}</td><td>{{ socket.description }}</td><td><a class="btn btn-success btn-on">on</a> <a class="btn btn-danger btn-off">off</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </main>
+
+            <footer class="mt-auto">
+            </footer>
+        </div>
+
+        <!-- JS, Popper.js, and jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    
+        <script>
+        	$(document).ready(function() {
+
+                function switchSocket(url, socket){
+                    $.post(url, { "socket" : socket }, null, "json")
+                    .done(function(data) {
+                        $alert = $('.alert')
+                        $alert.addClass('alert-success').html(data.message).fadeIn();
+                        setTimeout(function(){
+                            $alert.fadeOut();
+                        }, 2000)
+                    })
+                    .fail(function(data) {
+                        $alert = $('.alert')
+                        $alert.addClass('alert-danger').html(data.responseJSON.message).fadeIn();
+                        setTimeout(function(){
+                            $alert.fadeOut();
+                        }, 2000)
+                    });
+                }
+
+                $(".btn-on").click(function() {
+                    const socketId = $(this).closest("tr").data("id")
+                    switchSocket("/switch/on", socketId)
+                });
+
+                $(".btn-off").click(function() {
+                    const socketId = $(this).closest("tr").data("id")
+                    switchSocket("/switch/off", socketId)
+                });
+            });
+        </script>
+    </body>
+</html>
