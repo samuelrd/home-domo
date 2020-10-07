@@ -1,6 +1,9 @@
 <?php
 
+use App\Application\Commands\ScheduleRunCommand;
+use App\Controllers\EventController;
 use App\Controllers\HomeController;
+use App\Controllers\SocketController;
 use App\Controllers\SwitchController;
 use App\Utility\Configuration;
 use DI\ContainerBuilder;
@@ -51,6 +54,11 @@ $containerBuilder->addDefinitions([
         return Twig::create(__DIR__ . '/../templates', ['cache' => false]);
     },
 
+    // Register commands
+    'commands' => [
+        ScheduleRunCommand::class
+    ],
+
     // Configuration
     Configuration::class => new Configuration([
         // python scripts path
@@ -73,5 +81,20 @@ $app->add(TwigMiddleware::createFromContainer($app, Twig::class));
 // Register routes
 $app->post('/switch/{power}', SwitchController::class . ':switch');
 $app->get('/', HomeController::class . ':home');
+
+// Events
+$app->get('/events/edit[/{id}]', EventController::class . ':edit');
+$app->get('/events', EventController::class . ':list');
+$app->get('/events/{id}', EventController::class . ':get');
+$app->post('/events', EventController::class . ':store');
+$app->put('/events/{id}', EventController::class . ':update');
+$app->delete('/events/{id}', EventController::class . ':delete');
+
+// Socket
+$app->get('/sockets', SocketController::class . ':list');
+$app->get('/sockets/{id}', SocketController::class . ':get');
+$app->post('/sockets', SocketController::class . ':store');
+$app->put('/sockets/{id}', SocketController::class . ':update');
+$app->delete('/sockets/{id}', SocketController::class . ':delete');
 
 return $app;

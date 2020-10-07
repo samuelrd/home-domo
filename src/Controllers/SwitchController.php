@@ -23,7 +23,7 @@ class SwitchController
 
         $data = $request->getParsedBody();
         $socket = $this->em->getRepository(Socket::class)->find($data["socket"]);
-        $operation = $this->operationFactory->createSocketOperation($args['power'], $socket);
+        $operation = $this->operationFactory->createSocketOperation($args["power"], $socket);
         
         try
         {
@@ -31,17 +31,17 @@ class SwitchController
         }
         catch (\Exception $ex)
         {
-            $errorResponse = ['message' => $ex->getMessage()];
+            $errorResponse = ["message" => $ex->getMessage()];
             $response->getBody()->write(json_encode($errorResponse));
             return $response
-                        ->withHeader('Content-Type', 'application/json')
+                        ->withHeader("Content-Type", "application/json")
                         ->withStatus(400);
         }
 
-        $returnData = ['message' => "Socket {$socket->getName()} is {$args['power']}", 'result' => implode(' ', $operationReturn)];
+        $returnData = ["message" => "Socket {$socket->getName()} is {$args['power']}", "result" => implode(" ", $operationReturn)];
         $response->getBody()->write(json_encode($returnData));
 
         return $response
-                ->withHeader('Content-Type', 'application/json');
+                ->withHeader("Content-Type", "application/json");
     }
 }

@@ -21,6 +21,6 @@ class HomeController
     public function home(Request $request, Response $response, $args){
         $socketRepository = $this->em->getRepository(Socket::class);
         $sockets = $socketRepository->findAll();
-        return $this->view->render($response, 'index.twig', ["sockets" => $sockets]);
+        return $this->view->render($response, "index.twig", ["sockets" => $sockets]);
     }
 }

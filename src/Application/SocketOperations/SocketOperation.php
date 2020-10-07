@@ -10,6 +10,7 @@ abstract class SocketOperation
     protected $program = '/usr/bin/python3';
     protected $scriptPath;
     protected $socket;
+    protected $name;
 
     public function __construct(Socket $socket, $scriptPath = '/home/pi')
     {
@@ -32,5 +33,13 @@ abstract class SocketOperation
         }
 
         return $output;
+    }
+
+    /**
+     * Get the value of name
+     */ 
+    public function getName()
+    {
+        return $this->name;
     }
 }
