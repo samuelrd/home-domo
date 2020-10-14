@@ -1,0 +1,14 @@
+<form id="socket-form">
+    <div class="row">
+        <div class="col form-group">
+        <label for="name">Name</label>
+            <input name="name" class="form-control" value="{{ socket ? socket.name : '' }}">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col form-group">
+        <label for="description">Description</label>
+            <input name="description" class="form-control" value="{{ socket ? socket.description : '' }}">
+        </div>
+    </div>
+</form>

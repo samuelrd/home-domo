@@ -91,6 +91,7 @@ $app->put('/events/{id}', EventController::class . ':update');
 $app->delete('/events/{id}', EventController::class . ':delete');
 
 // Socket
+$app->get('/sockets/edit[/{id}]', SocketController::class . ':edit');
 $app->get('/sockets', SocketController::class . ':list');
 $app->get('/sockets/{id}', SocketController::class . ':get');
 $app->post('/sockets', SocketController::class . ':store');

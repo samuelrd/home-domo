@@ -1,0 +1,23 @@
+<form id="event-form" class="form-row">
+    <div class="col form-group">
+        <select name="operation_name" class="form-control">{{ event.operationName }}
+        {% for operation in ['on', 'off'] %}
+            <option {{ (event.operationName and event.operationName == operation) ? 'selected' : '' }}>{{ operation }}</option>
+        {% endfor %}
+        </select>
+    </div>
+    <div class="col form-group">
+        <select name="hours" class="form-control">
+        {% for i in range(0, 23) %}
+            <option {{ (event.time and ('0' ~ event.time | slice(-4, 2)) == i) ? 'selected' : '' }}>{{ i < 10 ? '0' : ''}}{{i}}</option>
+        {% endfor %}
+        </select>
+    </div>:
+    <div class="col form-group">
+        <select name="minutes" class="form-control">
+        {% for i in range(0, 59) %}
+            <option {{ (event.time and ('0' ~ event.time | slice(-2, 2)) == i) ? 'selected' : '' }}>{{ i < 10 ? '0' : ''}}{{i}}</option>
+        {% endfor %}
+        </select>
+    </div>
+</form>

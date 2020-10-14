@@ -79,7 +79,7 @@ class EventController
     {
         $eventId = $args["id"];
 
-        // validate
+        // TODO validate
 
         $event = $this->em->getRepository(Event::class)->find($eventId);
         $this->em->remove($event);
@@ -91,6 +91,10 @@ class EventController
 
     public function edit(Request $request, Response $response, $args)
     {
-        return $this->view->render($response, "forms/eventForm.twig");
+        $eventId = $args["id"] ?? false;
+        // TODO validate
+        $event = $eventId ? $this->em->getRepository(Event::class)->find($eventId) : null;
+        
+        return $this->view->render($response, "forms/eventForm.twig", ['event' => $event]);
     }
 }

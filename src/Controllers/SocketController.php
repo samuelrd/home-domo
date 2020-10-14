@@ -6,13 +6,16 @@ use App\Domain\Socket;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Views\Twig;
 
 class SocketController
 {
     protected $em;
+    protected $view;
 
-    public function __construct(EntityManagerInterface $em) {
+    public function __construct(EntityManagerInterface $em, Twig $view) {
         $this->em = $em;
+        $this->view = $view;
     }
 
     public function list(Request $request, Response $response, $args)
@@ -70,9 +73,9 @@ class SocketController
     {
         $socketId = $args["id"];
 
+        // TODO 
         // validate
-
-        //delete all linked events
+        // delete all linked events
 
         $socket = $this->em->getRepository(Socket::class)->find($socketId);
         $this->em->remove($socket);
@@ -80,5 +83,14 @@ class SocketController
         $response->getBody()->write(json_encode(["message" => "socket successfully deleted"]));
 
         return $response->withHeader("Content-Type", "application/json");
+    }
+
+    public function edit(Request $request, Response $response, $args)
+    {        
+        $socketId = $args["id"] ?? false;
+        // TODO validate
+        $socket = $socketId ? $this->em->getRepository(Socket::class)->find($socketId) : null;
+        
+        return $this->view->render($response, "forms/socketForm.twig", ['socket' => $socket]);
     }
 }

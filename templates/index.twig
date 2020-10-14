@@ -102,7 +102,7 @@
                 <div class="alert" role="alert" style="display:none">
                 </div>
                 {% for socket in sockets %}
-                    <div data-id={{ socket.id }} class="socket-row">
+                    <div data-id={{ socket.id }} data-name="{{ socket.name }}" class="socket-row">
                         <div class="row border-top pb-1 pt-1">
                             <div class="col-sm-1 align-self-center"># {{ socket.id }}</div>
                             <div class="col-sm align-self-center">{{ socket.name }}</div>
@@ -123,24 +123,28 @@
                                     <div class="card-header socket-detail-card-header">
                                         <i class="far fa-clock"></i> Programmed actions
                                         <span class="float-right">
-                                            <button class="btn btn-info btn-sm"><i class="fas fa-plus"></i> Add action</button>
+                                            <button class="btn btn-info btn-sm btn-new-event"><i class="fas fa-plus"></i> Add action</button>
                                         </span>
                                     </div>
                                     <div class="socket-detail-card-body-wrapper">
                                         <div class="card-body">
-                                            <div class="timeline">
-                                                {% for event in socket.events %}
-                                                    <div class="timeline-element {% if event.operationName == 'on' %}dot-warning{% endif %}">
-                                                        <div>
-                                                            <span>switch <span class="badge {% if event.operationName == 'on' %}badge-warning{% else %}badge-secondary{% endif %}">{{ event.operationName }}</span>, at {{ event.timeString }}</span>
-                                                            <div class="float-right">
-                                                                <button class="btn btn-outline-secondary btn-sm" title="edit"><i class="fas fa-edit"></i></button>
-                                                                <button class="btn btn-outline-secondary btn-sm" title="delete"><i class="fas fa-trash"></i></button>
+                                            {% if socket.events is not empty %}
+                                                <div class="timeline">
+                                                    {% for event in socket.events %}
+                                                        <div data-event-id={{event.id}} class="timeline-element {% if event.operationName == 'on' %}dot-warning{% endif %}">
+                                                            <div>
+                                                                <span>switch <span class="badge {% if event.operationName == 'on' %}badge-warning{% else %}badge-secondary{% endif %}">{{ event.operationName }}</span>, at {{ event.timeString }}</span>
+                                                                <div class="float-right">
+                                                                    <button class="btn btn-outline-secondary btn-sm btn-edit-event" title="edit"><i class="fas fa-edit"></i></button>
+                                                                    <button class="btn btn-outline-secondary btn-sm btn-delete-event" title="delete"><i class="fas fa-trash"></i></button>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                {% endfor %}
-                                            </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <div>No actions programmed for this socket</div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -152,19 +156,23 @@
                                             <i class="fas fa-cog"></i> Socket
                                         </span>
                                         <span class="float-right">
-                                            <button class="btn btn-info btn-sm"><i class="fas fa-link"></i> Pair</button> <button class="btn btn-success btn-sm"><i class="fas fa-edit"></i> Edit</button>
+                                            <button class="btn btn-info btn-sm btn-pair"><i class="fas fa-link"></i> Pair</button> <button class="btn btn-success btn-sm btn-edit-socket"><i class="fas fa-edit"></i> Edit</button>
                                         </span>
                                     </div>
                                     <div class="socket-detail-card-body-wrapper">
                                         <ul class="list-group list-group-flush">
-                                            {% if socket.events %}
+                                            {% if socket.events is not empty %}
                                             <li class="list-group-item">
-                                                This socket should be {{ socket.previousEvent.operationName }} since {{socket.previousEvent.timeString}}
+                                                This socket should be <span class="badge {% if socket.previousEvent.operationName == 'on' %}badge-warning{% else %}badge-secondary{% endif %}">{{ socket.previousEvent.operationName }}</span> since {{socket.previousEvent.timeString}}
                                             </li>
+                                            <li class="list-group-item">
+                                                Next action: switch <span class="badge {% if socket.nextEvent.operationName == 'on' %}badge-warning{% else %}badge-secondary{% endif %}">{{ socket.nextEvent.operationName }}</span> at {{socket.nextEvent.timeString}}
+                                            </li>
+                                            {% else %}
+                                                <div class="card-body">
+                                                    <div>No next or previous actions to show</div>
+                                                </div>
                                             {% endif %}
-                                            <li class="list-group-item">
-                                                Next action: switch {{ socket.nextEvent.operationName }} at {{socket.nextEvent.timeString}}
-                                            </li>
                                         </ul>
                                     </div>
                                 </div>
@@ -192,7 +200,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-primary modal-action-btn">Submit</button>
                 </div>
                 </div>
             </div>
@@ -204,6 +212,23 @@
     
         <script>
         	$(document).ready(function() {
+
+                function serializeFormJson(form) {
+                    var output = {};
+                    var serialized = form.serializeArray();
+                    $.each(serialized, function () {
+                        if (output[this.name]) {
+                            if (!output[this.name].push) {
+                                output[this.name] = [output[this.name]];
+                            }
+                            output[this.name].push(this.value || '');
+                        } else {
+                            output[this.name] = this.value || '';
+                        }
+                    });
+                    return output;
+                };
+
 
                 function switchSocket(url, socket){
                     $.post(url, { "socket" : socket }, null, "json")
@@ -233,19 +258,95 @@
                     switchSocket("/switch/off", socketId)
                 });
 
+                $(".btn-pair").click(function() {
+                    const socketId = $(this).closest(".socket-row").data("id")
+                    switchSocket("/switch/pair", socketId)
+                });
+
                 $(".btn-new-event").click(function() {
                     const socketId = $(this).closest(".socket-row").data("id")
-                    const modal = $("#formModal")
-                    const url = '/events/edit'
-                    $.get(url)
-                    .done(function(data) {
-                        $('.modal-body').html(data)
-                        modal.modal({show:true})
-                    })
-                    .fail(function(data) {
-
-                    });
+                    const socketName = $(this).closest(".socket-row").data("name")
+                    editEvent(false, socketId)
                 });
+
+                $(".btn-edit-event").click(function() {
+                    const socketId = $(this).closest(".socket-row").data("id")
+                    const eventId = $(this).closest(".timeline-element").data("event-id")
+                    editEvent(eventId, socketId)
+                });
+
+                $(".btn-delete-event").click(function() {
+                    const eventId = $(this).closest(".timeline-element").data("event-id")
+                    alert("Are you sure?")
+                    $.ajax({
+                        url: `/events/${eventId}`,
+                        method: "DELETE"
+                    })
+                    .done(() => {
+                        location.reload();
+                    })
+                });
+
+                function editEvent(id, socketId) {
+                    const url = "/events/edit" + (id ? `/${id}` : "")
+                    const modal = $("#formModal")
+                    const title = (id ? "Edit event" : "Add new event") + ` for socket ${socketId}`;
+                    $.get(url)
+                    .done((htmlForm) => {
+                        $(".modal-title").html(title)
+                        $(".modal-body").html(htmlForm)
+                        $(".modal-action-btn").click(() => {
+                            const form = $("#event-form")
+                            const jsonFormData = serializeFormJson(form);
+                            const data = {
+                                socket_id: socketId,
+                                operation_name: jsonFormData.operation_name,
+                                time: jsonFormData.hours + jsonFormData.minutes
+                            }
+                            $.ajax({
+                                url: "/events" + (id ? `/${id}` : ""),
+                                method: id ? "PUT" : "POST",
+                                data:data
+                            })
+                            .done(() => {
+                                location.reload();
+                            })
+                            
+                        })
+                        modal.modal({show: true})
+                    });
+                }
+
+                $(".btn-edit-socket").click(function() {
+                    const socketId = $(this).closest(".socket-row").data("id")
+                    editSocket(socketId)
+                });
+
+                function editSocket(socketId) {
+                    const url = "/sockets/edit" + (socketId ? `/${socketId}` : "")
+                    const modal = $("#formModal")
+                    const title = (socketId ? `Edit socket ${socketId}` : "Add new socket");
+                    $.get(url)
+                    .done((htmlForm) => {
+                        $(".modal-title").html(title)
+                        $(".modal-body").html(htmlForm)
+                        $(".modal-action-btn").click(() => {
+                            const form = $("#socket-form")
+                            const jsonFormData = serializeFormJson(form);
+                            $.ajax({
+                                url: "/sockets" + (socketId ? `/${socketId}` : ""),
+                                method: socketId ? "PUT" : "POST",
+                                data:jsonFormData
+                            })
+                            .done(() => {
+                                {# location.reload(); #}
+                            })
+                            
+                        })
+                        modal.modal({show: true})
+                    });
+                }
+
             });
         </script>
     </body>
