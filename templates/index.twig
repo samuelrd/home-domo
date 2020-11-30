@@ -124,6 +124,7 @@
                                         <i class="far fa-clock"></i> Programmed actions
                                         <span class="float-right">
                                             <button class="btn btn-info btn-sm btn-new-event"><i class="fas fa-plus"></i> Add action</button>
+                                            <button class="btn btn-info btn-sm btn-edit-events"><i class="fas fa-edit"></i> Edit events</button>
                                         </span>
                                     </div>
                                     <div class="socket-detail-card-body-wrapper">
@@ -232,19 +233,15 @@
 
                 function switchSocket(url, socket){
                     $.post(url, { "socket" : socket }, null, "json")
-                    .done(function(data) {
+                    .done((data) => {
                         $alert = $('.alert')
                         $alert.addClass('alert-success').html(data.message).fadeIn()
-                        setTimeout(function(){
-                            $alert.fadeOut()
-                        }, 2000)
+                        setTimeout(() => $alert.fadeOut(), 2000)
                     })
-                    .fail(function(data) {
+                    .fail((data) => {
                         $alert = $('.alert')
                         $alert.addClass('alert-danger').html(data.responseJSON.message).fadeIn()
-                        setTimeout(function(){
-                            $alert.fadeOut()
-                        }, 2000)
+                        setTimeout(() => $alert.fadeOut(), 2000)
                     });
                 }
 
@@ -275,16 +272,24 @@
                     editEvent(eventId, socketId)
                 });
 
+                $(".btn-edit-events").click(function() {
+                    const socketId = $(this).closest(".socket-row").data("id")
+                    editEvents(socketId)
+                });
+
                 $(".btn-delete-event").click(function() {
                     const eventId = $(this).closest(".timeline-element").data("event-id")
-                    alert("Are you sure?")
-                    $.ajax({
-                        url: `/events/${eventId}`,
-                        method: "DELETE"
-                    })
-                    .done(() => {
-                        location.reload();
-                    })
+                    const confirmed = confirm("Are you sure?");
+                    if (confirmed)
+                    {
+                        $.ajax({
+                            url: `/events/${eventId}`,
+                            method: "DELETE"
+                        })
+                        .done(() => {
+                            location.reload();
+                        })
+                    }
                 });
 
                 function editEvent(id, socketId) {
@@ -317,6 +322,36 @@
                     });
                 }
 
+                function editEvents(socketId) {
+                    const url = `/sockets/${socketId}/edit-events`
+                    const modal = $("#formModal")
+                    const title = "Edit events"
+                    $.get(url)
+                    .done((htmlForm) => {
+                        $(".modal-title").html(title)
+                        $(".modal-body").html(htmlForm)
+                        $(".modal-action-btn").click(() => {
+                            const form = $("#event-form")
+                            const jsonFormData = serializeFormJson(form);
+                            const data = {
+                                socket_id: socketId,
+                                operation_name: jsonFormData.operation_name,
+                                time: jsonFormData.hours + jsonFormData.minutes
+                            }
+                            {# $.ajax({
+                                url: "/events" + (id ? `/${id}` : ""),
+                                method: id ? "PUT" : "POST",
+                                data:data
+                            })
+                            .done(() => {
+                                location.reload();
+                            }) #}
+                            
+                        })
+                        modal.modal({show: true})
+                    });
+                }
+
                 $(".btn-edit-socket").click(function() {
                     const socketId = $(this).closest(".socket-row").data("id")
                     editSocket(socketId)
@@ -339,7 +374,7 @@
                                 data:jsonFormData
                             })
                             .done(() => {
-                                {# location.reload(); #}
+                                location.reload();
                             })
                             
                         })

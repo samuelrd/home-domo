@@ -1,0 +1,84 @@
+<form id="events-form">
+    <div class="form-rows">
+    {% for event in socket.events %}
+        <div class="form-row">
+            <div class="col form-group">
+                <input type="hidden" name="id" value="{{ event.id }}">
+                <select name="operation_name" class="form-control">
+                {% for operation in ["on", "off"] %}
+                    <option {{ (event.operationName and event.operationName == operation) ? "selected" : "" }}>{{ operation }}</option>
+                {% endfor %}
+                </select>
+            </div>
+            <div class="col form-group">
+                <select name="hours" class="form-control">
+                {% for i in range(0, 23) %}
+                    <option {{ (event.time and (("000" ~ event.time) | slice(-4, 2)) == i) ? "selected" : "" }}>{{ i < 10 ? "0" : ""}}{{i}}</option>
+                {% endfor %}
+                </select>
+            </div>:
+            <div class="col form-group">
+                <select name="minutes" class="form-control">
+                {% for i in range(0, 59) %}
+                    <option {{ (event.time and (("0" ~ event.time) | slice(-2, 2)) == i) ? "selected" : "" }}>{{ i < 10 ? "0" : ""}}{{i}}</option>
+                {% endfor %}
+                </select>
+            </div>
+            <div class="col-1">
+                <button class="btn btn-danger btn-delete-event"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+    <div class="col">
+        <div class="form-row">
+            <button class="btn btn-info btn-sm btn-add-event"><i class="fas fa-plus"></i> Add event</button>
+        </div>
+    </div>
+
+        <script>
+        	$(document).ready(function() {
+
+                $(".btn-add-event").click(function(e) {
+                    e.preventDefault();
+
+                    var formRow =                    
+                        `<div class="form-row">
+                            <div class="col form-group">
+                                <input type="hidden" name="id" value="{{ event.id }}">
+                                <select name="operation_name" class="form-control">
+                                {% for operation in ["on", "off"] %}
+                                    <option>{{ operation }}</option>
+                                {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col form-group">
+                                <select name="hours" class="form-control">
+                                {% for i in range(0, 23) %}
+                                    <option>{{ i < 10 ? "0" : ""}}{{i}}</option>
+                                {% endfor %}
+                                </select>
+                            </div>:
+                            <div class="col form-group">
+                                <select name="minutes" class="form-control">
+                                {% for i in range(0, 59) %}
+                                    <option>{{ i < 10 ? "0" : ""}}{{i}}</option>
+                                {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-1">
+                                <button class="btn btn-danger btn-delete-event"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>`;
+
+                        $(".form-rows").append(formRow);
+                });
+
+                $(document).on("click", ".btn-delete-event", function(e) {
+                    e.preventDefault();
+                    $(this).closest(".form-row").remove();
+                });
+
+            });
+        </script>
+</form>

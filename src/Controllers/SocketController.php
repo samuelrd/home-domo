@@ -93,4 +93,15 @@ class SocketController
         
         return $this->view->render($response, "forms/socketForm.twig", ['socket' => $socket]);
     }
+
+    public function editEvents(Request $request, Response $response, $args)
+    {        
+        $socketId = $args["id"] ?? false;
+        // TODO validate
+        $socket = $socketId ? $this->em->getRepository(Socket::class)->find($socketId) : null;
+        
+        return $this->view->render($response, "forms/eventEditForm.twig", ['socket' => $socket]);
+    }
+
+    
 }
