@@ -2,10 +2,9 @@
 
 namespace App\Domain;
 
-use App\Domain\Event;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use DateTime;
+use Datetime;
 
 /**
  * Socket
@@ -38,146 +37,107 @@ class Socket
 	 */
 	private $description;
 
-    /**
-     * @var ArrayCollection
-     * 
-     * @ORM\OneToMany(targetEntity="Event", mappedBy="socket")
+	/**
+	 * @var ArrayCollection
+	 *
+	 * @ORM\OneToMany(targetEntity="Event", mappedBy="socket")
 	 * @ORM\OrderBy({"time" = "ASC"})
-     */
+	 */
 	protected $events;
 
-    public function __construct()
-    {
-        $this->events = new ArrayCollection();
-    }
+	public function __construct()
+	{
+		$this->events = new ArrayCollection();
+	}
 
-	/**
-	 * Get id
-	 *
-	 * @return integer
-	 */
-	public function getId()
+	public function getId(): int
 	{
 		return $this->id;
 	}
-	
-	/**
-	 * Set name
-	 *
-	 * @param integer $name
-	 *
-	 * @return Socket
-	 */
-	public function setName($name)
+
+	public function setName(string $name)
 	{
 		$this->name = $name;
 
 		return $this;
 	}
 
-	/**
-	 * Get name
-	 *
-	 * @return integer
-	 */
-	public function getName()
+	public function getName(): string
 	{
 		return $this->name;
 	}
 
-	/**
-	 * Set description
-	 *
-	 * @param integer $description
-	 *
-	 * @return Socket
-	 */
-	public function setDescription($description)
+	public function setDescription(string $description): self
 	{
 		$this->description = $description;
 
 		return $this;
 	}
 
-	/**
-	 * Get description
-	 *
-	 * @return integer
-	 */
-	public function getDescription()
+	public function getDescription(): string
 	{
 		return $this->description;
 	}
 
-    /**
-     * Add Event
-     *
-     * @return Event
-     */
-    public function addEvent(Event $event)
-    {
-        $this->events->add[] = $event;
+	public function addEvent(Event $event): self
+	{
+		$this->events->add[] = $event;
 
-        return $this;
-    }
-
-    /**
-     * Remove Event
-     */
-    public function removeEvent(Event $event): void
-    {
-        $this->events->removeElement($event);
-    }
-
-    /**
-     * Get the value of events
-     *
-     * @return ArrayCollection
-     */ 
-    public function getEvents()
-    {
-        return $this->events;
+		return $this;
 	}
 
-	public function getNextEvent($time = null)
+	public function removeEvent(Event $event): self
 	{
-		$time = $time ?? intval((new DateTime())->format('Hi'));
-		$nextEvents = $this->getEvents()->filter(function(Event $event) use ($time){
+		$this->events->removeElement($event);
+
+		return $this;
+	}
+
+	public function getEvents(): ArrayCollection
+	{
+		return $this->events;
+	}
+
+	public function getNextEvent(int $time = null): ?Event
+	{
+		$time = $time ?? (int) ((new DateTime())->format('Hi'));
+		$nextEvents = $this->getEvents()->filter(function(Event $event) use ($time) {
 						return $event->getTime() > $time;
 					});
 
 		return $nextEvents->first() ?: $this->events->first();
 	}
-	
-	public function getPreviousEvent($time = null)
+
+	public function getPreviousEvent(int $time = null): ?Event
 	{
-		$time = $time ?? intval((new DateTime())->format('Hi'));
-		$prevEvents = $this->getEvents()->filter(function(Event $event) use ($time){
+		$time = $time ?? (int) ((new DateTime())->format('Hi'));
+		$prevEvents = $this->getEvents()->filter(function(Event $event) use ($time) {
 						return $event->getTime() < $time;
 					});
+
 		return $prevEvents->last() ?: $this->events->last();
 	}
-	
-	public function toArray()
+
+	public function toArray(): array
 	{
 		return [
-			"id" => $this->getId(),
-			"name" => $this->getName(),
-			"description" => $this->getDescription(),
-			"events" => array_map(function($event){
+			'id' => $this->getId(),
+			'name' => $this->getName(),
+			'description' => $this->getDescription(),
+			'events' => array_map(function($event) {
 				return [
-					"id" => $event->getId(),
-					"operationName" => $event->getOperationName(),
-					"time" => $event->getTime(),
-					"timeString" => $event->getTimeString()
+					'id' => $event->getId(),
+					'operationName' => $event->getOperationName(),
+					'time' => $event->getTime(),
+					'timeString' => $event->getTimeString()
 				];
 			}, $this->events->toArray()),
-			"nextEvent" => $this->getNextEvent()->toArray(),
-			"previousEvent" => $this->getPreviousEvent()->toArray(),
+			'nextEvent' => $this->getNextEvent() ? $this->getNextEvent()->toArray() : null,
+			'previousEvent' => $this->getPreviousEvent() ? $this->getPreviousEvent()->toArray() : null,
 		];
 	}
 
-	public function toJson()
+	public function toJson(): string
 	{
 		return json_encode($this->toArray());
 	}

@@ -10,98 +10,97 @@ use Slim\Views\Twig;
 
 class SocketController
 {
-    protected $em;
-    protected $view;
+	protected $em;
+	protected $view;
 
-    public function __construct(EntityManagerInterface $em, Twig $view) {
-        $this->em = $em;
-        $this->view = $view;
-    }
+	public function __construct(EntityManagerInterface $em, Twig $view) {
+		$this->em = $em;
+		$this->view = $view;
+	}
 
-    public function list(Request $request, Response $response, $args)
-    {
-        $allSockets = $this->em->getRepository(Socket::class)->findAll();
-        $sockets = array_map(function($socket){ return $socket->toArray();}, $allSockets);
-        $response->getBody()->write(json_encode($sockets));
-        return $response->withHeader("Content-Type", "application/json");
-    }
+	public function list(Request $request, Response $response, $args)
+	{
+		$allSockets = $this->em->getRepository(Socket::class)->findAll();
+		$sockets = array_map(function($socket) { return $socket->toArray(); }, $allSockets);
+		$response->getBody()->write(json_encode($sockets));
 
-    public function get(Request $request, Response $response, $args)
-    {
-        $socket = $this->em->getRepository(Socket::class)->find($args["id"]);
-        $response->getBody()->write($socket->toJson());
-        
-        return $response->withHeader("Content-Type", "application/json");
-    }
+		return $response->withHeader('Content-Type', 'application/json');
+	}
 
-    public function store(Request $request, Response $response, $args)
-    {
-        $data = $request->getParsedBody();
-        $name = $data["name"];
-        $description = $data["description"];
+	public function get(Request $request, Response $response, $args)
+	{
+		$socket = $this->em->getRepository(Socket::class)->find($args['id']);
+		$response->getBody()->write($socket->toJson());
 
-        // TODO validate
+		return $response->withHeader('Content-Type', 'application/json');
+	}
 
-        $socket = new Socket();
-        $socket->setName($name)->setDescription($description);
-        $this->em->persist($socket);
-        $this->em->flush();
-        $response->getBody()->write($socket->toJson());
+	public function store(Request $request, Response $response, $args)
+	{
+		$data = $request->getParsedBody();
+		$name = $data['name'];
+		$description = $data['description'];
 
-        return $response->withHeader("Content-Type", "application/json");
-    }
+		// TODO validate
 
-    public function update(Request $request, Response $response, $args)
-    {
-        $data = $request->getParsedBody();
-        $socketId = $args["id"];
-        $name = $data["name"];
-        $description = $data["description"];
+		$socket = new Socket();
+		$socket->setName($name)->setDescription($description);
+		$this->em->persist($socket);
+		$this->em->flush();
+		$response->getBody()->write($socket->toJson());
 
-        // TODO validate
+		return $response->withHeader('Content-Type', 'application/json');
+	}
 
-        $socket = $this->em->getRepository(Socket::class)->find($socketId);
-        $socket->setName($name)->setDescription($description);
-        $this->em->persist($socket);
-        $this->em->flush();
-        $response->getBody()->write($socket->toJson());
+	public function update(Request $request, Response $response, $args)
+	{
+		$data = $request->getParsedBody();
+		$socketId = $args['id'];
+		$name = $data['name'];
+		$description = $data['description'];
 
-        return $response->withHeader("Content-Type", "application/json");
-    }
+		// TODO validate
 
-    public function delete(Request $request, Response $response, $args)
-    {
-        $socketId = $args["id"];
+		$socket = $this->em->getRepository(Socket::class)->find($socketId);
+		$socket->setName($name)->setDescription($description);
+		$this->em->persist($socket);
+		$this->em->flush();
+		$response->getBody()->write($socket->toJson());
 
-        // TODO 
-        // validate
-        // delete all linked events
+		return $response->withHeader('Content-Type', 'application/json');
+	}
 
-        $socket = $this->em->getRepository(Socket::class)->find($socketId);
-        $this->em->remove($socket);
-        $this->em->flush();
-        $response->getBody()->write(json_encode(["message" => "socket successfully deleted"]));
+	public function delete(Request $request, Response $response, $args)
+	{
+		$socketId = $args['id'];
 
-        return $response->withHeader("Content-Type", "application/json");
-    }
+		// TODO
+		// validate
+		// delete all linked events
 
-    public function edit(Request $request, Response $response, $args)
-    {        
-        $socketId = $args["id"] ?? false;
-        // TODO validate
-        $socket = $socketId ? $this->em->getRepository(Socket::class)->find($socketId) : null;
-        
-        return $this->view->render($response, "forms/socketForm.twig", ['socket' => $socket]);
-    }
+		$socket = $this->em->getRepository(Socket::class)->find($socketId);
+		$this->em->remove($socket);
+		$this->em->flush();
+		$response->getBody()->write(json_encode(['message' => 'socket successfully deleted']));
 
-    public function editEvents(Request $request, Response $response, $args)
-    {        
-        $socketId = $args["id"] ?? false;
-        // TODO validate
-        $socket = $socketId ? $this->em->getRepository(Socket::class)->find($socketId) : null;
-        
-        return $this->view->render($response, "forms/eventEditForm.twig", ['socket' => $socket]);
-    }
+		return $response->withHeader('Content-Type', 'application/json');
+	}
 
-    
+	public function edit(Request $request, Response $response, $args)
+	{
+		$socketId = $args['id'] ?? false;
+		// TODO validate
+		$socket = $socketId ? $this->em->getRepository(Socket::class)->find($socketId) : null;
+
+		return $this->view->render($response, 'forms/socketForm.twig', ['socket' => $socket]);
+	}
+
+	public function editEvents(Request $request, Response $response, $args)
+	{
+		$socketId = $args['id'] ?? false;
+		// TODO validate
+		$socket = $socketId ? $this->em->getRepository(Socket::class)->find($socketId) : null;
+
+		return $this->view->render($response, 'forms/eventEditForm.twig', ['socket' => $socket]);
+	}
 }

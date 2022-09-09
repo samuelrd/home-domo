@@ -14,56 +14,56 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Tools\Setup;
 use Psr\Container\ContainerInterface;
+use Dotenv\Dotenv;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
-use Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$dotenv = Dotenv::createImmutable(__DIR__.'/../');
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
 
 $containerBuilder = new ContainerBuilder();
 
 $containerBuilder->addDefinitions([
-    // dependencies
-    EntityManagerInterface::class => function (): EntityManager {
-        $config = Setup::createAnnotationMetadataConfiguration([__DIR__.'/../src/Domain/'], true);
-        $config->setMetadataDriverImpl(
-            new AnnotationDriver(new AnnotationReader, [__DIR__.'/../src/Domain/'])
-        );
+	// dependencies
+	EntityManagerInterface::class => function(): EntityManager {
+		$config = Setup::createAnnotationMetadataConfiguration([__DIR__ . '/../src/Domain/'], true);
+		$config->setMetadataDriverImpl(
+			new AnnotationDriver(new AnnotationReader(), [__DIR__ . '/../src/Domain/'])
+		);
 
-        $config->setMetadataCacheImpl(
-            new FilesystemCache(__DIR__.'/../var/cache/doctrine')
-        );
+		$config->setMetadataCacheImpl(
+			new FilesystemCache(__DIR__ . '/../var/cache/doctrine')
+		);
 
-        return EntityManager::create([
-            'driver' => $_ENV['DB_DRIVER'],
-            'host' => $_ENV['DB_HOST'],
-            'port' => $_ENV['DB_PORT'],
-            'dbname' => $_ENV['DB_NAME'],
-            'user' => $_ENV['DB_USER'],
-            'password' => $_ENV['DB_PASSWORD'],
-        ], $config);
-    },
+		return EntityManager::create([
+			'driver' => $_ENV['DB_DRIVER'],
+			'host' => $_ENV['DB_HOST'],
+			'port' => $_ENV['DB_PORT'],
+			'dbname' => $_ENV['DB_NAME'],
+			'user' => $_ENV['DB_USER'],
+			'password' => $_ENV['DB_PASSWORD'],
+		], $config);
+	},
 
-    // Twig templates
-    Twig::class => function () {
-        return Twig::create(__DIR__ . '/../templates', ['cache' => false]);
-    },
+	// Twig templates
+	Twig::class => function() {
+		return Twig::create(__DIR__ . '/../templates', ['cache' => false]);
+	},
 
-    // Register commands
-    'commands' => [
-        ScheduleRunCommand::class
-    ],
+	// Register commands
+	'commands' => [
+		ScheduleRunCommand::class
+	],
 
-    // Configuration
-    Configuration::class => new Configuration([
-        // python scripts path
-        'scripts_path' => __DIR__ . '/../bin/scripts'
-    ])
+	// Configuration
+	Configuration::class => new Configuration([
+		// python scripts path
+		'scripts_path' => __DIR__ . '/../bin/scripts'
+	])
 ]);
 
 // Build PHP-DI Container instance

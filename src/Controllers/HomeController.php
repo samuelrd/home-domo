@@ -10,17 +10,18 @@ use Slim\Views\Twig;
 
 class HomeController
 {
-    protected $em;
-    protected $view;
+	protected $em;
+	protected $view;
 
-    public function __construct(EntityManagerInterface $em, Twig $view) {
-        $this->em = $em;
-        $this->view = $view;
-    }
+	public function __construct(EntityManagerInterface $em, Twig $view) {
+		$this->em = $em;
+		$this->view = $view;
+	}
 
-    public function home(Request $request, Response $response, $args){
-        $socketRepository = $this->em->getRepository(Socket::class);
-        $sockets = $socketRepository->findAll();
-        return $this->view->render($response, "index.twig", ["sockets" => $sockets]);
-    }
+	public function home(Request $request, Response $response, $args) {
+		$socketRepository = $this->em->getRepository(Socket::class);
+		$sockets = $socketRepository->findAll();
+
+		return $this->view->render($response, 'index.twig', ['sockets' => $sockets]);
+	}
 }

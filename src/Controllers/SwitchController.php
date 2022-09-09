@@ -10,38 +10,41 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class SwitchController
 {
-    protected $em;
-    protected $operationFactory;
+	protected $em;
+	protected $operationFactory;
 
-    public function __construct(EntityManagerInterface $em, SocketOperationFactory $operationFactory) {
+	public function __construct(EntityManagerInterface $em, SocketOperationFactory $operationFactory) {
 
-        $this->em = $em;
-        $this->operationFactory = $operationFactory;
-    }
+		$this->em = $em;
+		$this->operationFactory = $operationFactory;
+	}
 
-    public function switch(Request $request, Response $response, $args){
+	public function switch(Request $request, Response $response, $args) {
 
-        $data = $request->getParsedBody();
-        $socket = $this->em->getRepository(Socket::class)->find($data["socket"]);
-        $operation = $this->operationFactory->createSocketOperation($args["power"], $socket);
-        
-        try
-        {
-            $operationReturn = $operation->run();
-        }
-        catch (\Exception $ex)
-        {
-            $errorResponse = ["message" => $ex->getMessage()];
-            $response->getBody()->write(json_encode($errorResponse));
-            return $response
-                        ->withHeader("Content-Type", "application/json")
-                        ->withStatus(400);
-        }
+		$data = $request->getParsedBody();
+		$socket = $this->em->getRepository(Socket::class)->find($data['socket']);
+		$operation = $this->operationFactory->createSocketOperation($args['power'], $socket);
 
-        $returnData = ["message" => "Socket {$socket->getName()} is {$args['power']}", "result" => implode(" ", $operationReturn)];
-        $response->getBody()->write(json_encode($returnData));
+		try
+		{
+			$operationReturn = $operation->run();
+		}
+		catch (\Exception $ex)
+		{
+			$errorResponse = ['message' => $ex->getMessage()];
+			$response->getBody()->write(json_encode($errorResponse));
 
-        return $response
-                ->withHeader("Content-Type", "application/json");
-    }
+			return $response
+				->withHeader('Content-Type', 'application/json')
+				->withStatus(400)
+			;
+		}
+
+		$returnData = ['message' => "Socket {$socket->getName()} is {$args['power']}", 'result' => implode(' ', $operationReturn)];
+		$response->getBody()->write(json_encode($returnData));
+
+		return $response
+			->withHeader('Content-Type', 'application/json')
+		;
+	}
 }
